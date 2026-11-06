@@ -47,7 +47,10 @@ namespace QuickCapture
         public CaptureMode Mode { get; private set; }
         public bool Recording { get; private set; }
         public bool SavePng { get { return savePng.Checked; } }
+        public bool CanCopyAndClose { get { return !Recording && (ready || quickCanvas != null); } }
+        public bool CopyAndCloseRequested { get; private set; }
         public string PickedColor { get; private set; }
+        public event Action CopyAvailabilityChanged;
 
         public SelectionOverlay(Bitmap snapshot, Rectangle desktop, Rectangle monitor, CaptureMode mode, bool recording,
             bool saveByDefault, bool adjustByDefault)
@@ -182,13 +185,15 @@ namespace QuickCapture
             confirm.Visible = reselect.Visible = false;
             if (guide != null)
                 UpdateGuide();
+            if (CopyAvailabilityChanged != null)
+                CopyAvailabilityChanged();
             Invalidate();
         }
 
         private void UpdateGuide()
         {
             guide.Text = ready ? Selection.Width + " × " + Selection.Height +
-                " px   |   안쪽을 드래그해 이동, 손잡이를 드래그해 크기 조정   |   Enter로 완료" :
+                " px   |   드래그로 이동 및 크기 조정   |   Enter로 완료, Ctrl+C로 복사 후 닫기" :
                 Mode == CaptureMode.Window ? "캡처할 창 클릭" :
                 Mode == CaptureMode.Fullscreen ? "화면을 클릭하거나 Enter" :
                 Mode == CaptureMode.Color ? "클릭하여 색상 복사   |   휠로 확대" :
@@ -405,6 +410,14 @@ namespace QuickCapture
         protected override bool ProcessCmdKey(ref Message message, Keys key)
         {
             if (key == Keys.Escape) { DialogResult = DialogResult.Cancel; return true; }
+            if (key == (Keys.Control | Keys.C) && CanCopyAndClose)
+            {
+                if (quickCanvas != null && quickCanvas.CropPending)
+                    quickCanvas.CommitCrop();
+                CopyAndCloseRequested = true;
+                DialogResult = DialogResult.OK;
+                return true;
+            }
             if (key == (Keys.Control | Keys.E) && !Recording && quickCanvas == null)
             { ToggleMarkup(); return true; }
             if (key == Keys.Enter && quickCanvas != null)
@@ -472,6 +485,8 @@ namespace QuickCapture
             ready = true;
             confirm.Visible = reselect.Visible = true;
             UpdateGuide();
+            if (CopyAvailabilityChanged != null)
+                CopyAvailabilityChanged();
             Invalidate();
         }
 
@@ -545,6 +560,8 @@ namespace QuickCapture
             Controls.Add(markupBar);
             markupBar.BringToFront();
             quickCanvas.Focus();
+            if (CopyAvailabilityChanged != null)
+                CopyAvailabilityChanged();
         }
 
         private void Zoom(int delta)

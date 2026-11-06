@@ -14,9 +14,10 @@ namespace QuickCapture
         private readonly HookCallback callback;
         private readonly ManualResetEventSlim ready = new ManualResetEventSlim();
         private uint threadId;
-        private readonly bool[] down = new bool[8];
-        private readonly bool[] suppressed = new bool[8];
+        private readonly bool[] down = new bool[9];
+        private readonly bool[] suppressed = new bool[9];
         private IntPtr overlay;
+        private IntPtr copyOverlay;
         public volatile bool CapturePrintScreen;
         public bool Installed { get; private set; }
 
@@ -42,6 +43,7 @@ namespace QuickCapture
             down[5] = IsDown(Keys.Escape);
             down[6] = IsDown(Keys.Enter);
             down[7] = IsDown(Keys.E);
+            down[8] = IsDown(Keys.C);
             IntPtr hook = SetWindowsHookEx(keyboardLowLevel, callback, GetModuleHandle(null), 0);
             Installed = hook != IntPtr.Zero;
             ready.Set();
@@ -76,6 +78,7 @@ namespace QuickCapture
                 case Keys.Escape: index = 5; break;
                 case Keys.Enter: index = 6; break;
                 case Keys.E: index = 7; break;
+                case Keys.C: index = 8; break;
                 default: return CallNextHookEx(IntPtr.Zero, code, message, data);
             }
             int kind = message.ToInt32();
@@ -89,13 +92,7 @@ namespace QuickCapture
                     bool control = IsDown(Keys.ControlKey);
                     bool alt = IsDown(Keys.Menu);
                     if (index >= 5)
-                    {
-                        IntPtr visibleOverlay = Volatile.Read(ref overlay);
-                        if (visibleOverlay != IntPtr.Zero && GetForegroundWindow() != visibleOverlay &&
-                            !win && !shift && !alt && (key == Keys.E ? control : !control))
-                            suppressed[index] = PostMessage(visibleOverlay, OverlayKeyMessage,
-                                new IntPtr((int)(key == Keys.E ? Keys.Control | key : key)), IntPtr.Zero);
-                    }
+                        suppressed[index] = !win && !shift && !alt && RouteOverlayKey(key, control);
                     else if ((index == 4 ? CapturePrintScreen && !win && !shift : win && shift) && !control && !alt)
                     {
                         suppressed[index] = PostMessage(target, CaptureMessage, new IntPtr(index == 4 ? 1 : index), IntPtr.Zero);
@@ -118,14 +115,24 @@ namespace QuickCapture
             return CallNextHookEx(IntPtr.Zero, code, message, data);
         }
 
+        private bool RouteOverlayKey(Keys key, bool control)
+        {
+            bool requiresControl = key == Keys.E || key == Keys.C;
+            IntPtr visibleOverlay = key == Keys.C ? Volatile.Read(ref copyOverlay) : Volatile.Read(ref overlay);
+            return visibleOverlay != IntPtr.Zero && GetForegroundWindow() != visibleOverlay && control == requiresControl &&
+                PostMessage(visibleOverlay, OverlayKeyMessage,
+                    new IntPtr((int)(requiresControl ? Keys.Control | key : key)), IntPtr.Zero);
+        }
+
         private static bool IsDown(Keys key)
         {
             return (GetAsyncKeyState((int)key) & 0x8000) != 0;
         }
 
-        internal void SetVisibleOverlay(IntPtr window)
+        internal void SetVisibleOverlay(IntPtr window, bool canCopy)
         {
             Volatile.Write(ref overlay, window);
+            Volatile.Write(ref copyOverlay, canCopy ? window : IntPtr.Zero);
         }
 
         private static void SuppressStartMenu()

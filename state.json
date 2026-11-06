@@ -1,8 +1,8 @@
 {
   "project": "QuickCapture",
   "date": "2026-11-06",
-  "version": "2.0.1",
-  "status": "2.0.1 source release built and verified",
+  "version": "2.0.2",
+  "status": "2.0.2 built and installed with current-user tray startup",
   "goal": "Independent Windows Snipping Tool replacement retaining Win+Shift+S",
   "reference": "Microsoft.ScreenSketch 11.2608.41.0 installed on the local PC",
   "repository": "https://github.com/kelvin926/QuickCapture",
@@ -15,7 +15,8 @@
     "Use the documented OS Click to Do entry point on supported PCs and a local OCR action panel otherwise.",
     "Offer content framing through a local perimeter heuristic and Bing visual search through the browser.",
     "Fetch verified, pinned upstream archives during dependency restore. Publish source and build scripts.",
-    "Review a rectangle, window, or full-screen selection before commitment by default. Keep per-capture PNG saving independent of clipboard copy."
+    "Review a rectangle, window, or full-screen selection before commitment by default. Keep per-capture PNG saving independent of clipboard copy.",
+    "Make Ctrl+C explicitly copy and close review or quick markup. Run the installed app with --tray at Windows sign-in."
   ],
   "verified": [
     "Dependencies restore from pinned archives and the release builds with warnings treated as errors under Windows PowerShell.",
@@ -30,10 +31,13 @@
     "Off-focus Escape routing reaches an isolated message target and stops after the overlay is detached.",
     "The native Windows share manager can be obtained for a desktop window.",
     "The review stage supports move and resize within the desktop, and final capture uses the adjusted source pixels.",
-    "The no-save choice skips PNG and directory creation. The enabled control case writes a PNG."
+    "The no-save choice skips PNG and directory creation. The enabled control case writes a PNG.",
+    "Ctrl+C confirms the current crop or markup, preserves the PNG choice, and schedules an explicit copy even with automatic copy disabled.",
+    "Off-focus Ctrl+C is routed only while the overlay can confirm a capture.",
+    "Launching the current-user Startup shortcut starts 2.0.2 in the tray without an editor. Repeating the launch keeps one tray instance."
   ],
   "pendingVerification": [
-    "Physical shortcut to completed paste and an integrated rerun of off-focus keyboard routing on an idle desktop.",
+    "Physical shortcut to completed paste and an actual Windows sign-in cycle.",
     "Live microphone and system audio synchronization, HDR monitor color, and sending through a Windows share target.",
     "Visual and behavioral parity with all native app screens and OS-integrated features."
   ]

@@ -11,8 +11,8 @@ using System.Windows.Forms;
 
 [assembly: System.Reflection.AssemblyTitle("QuickCapture")]
 [assembly: System.Reflection.AssemblyDescription("Windows screen capture and recording")]
-[assembly: System.Reflection.AssemblyVersion("2.0.1.0")]
-[assembly: System.Reflection.AssemblyFileVersion("2.0.1.0")]
+[assembly: System.Reflection.AssemblyVersion("2.0.2.0")]
+[assembly: System.Reflection.AssemblyFileVersion("2.0.2.0")]
 
 namespace QuickCapture
 {
@@ -21,15 +21,20 @@ namespace QuickCapture
         [STAThread]
         private static void Main(string[] args)
         {
+            bool trayOnly = args.Contains("--tray");
             bool firstInstance;
             using (var instance = new Mutex(true, @"Local\QuickCapture.Codex.2", out firstInstance))
             {
-                if (!firstInstance) { HotkeyHook.OpenExisting(); return; }
+                if (!firstInstance)
+                {
+                    if (!trayOnly) HotkeyHook.OpenExisting();
+                    return;
+                }
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 using (var app = new CaptureApp())
                 {
-                    if (!args.Contains("--tray")) app.OpenEditor(args.FirstOrDefault(File.Exists));
+                    if (!trayOnly) app.OpenEditor(args.FirstOrDefault(File.Exists));
                     Application.Run(app);
                 }
             }
@@ -139,6 +144,7 @@ namespace QuickCapture
                 Rectangle area = Rectangle.Empty;
                 string color = null;
                 bool savePng = settings.AutoSave;
+                bool forceCopy = false;
                 using (Bitmap snapshot = DesktopImage.Capture(desktop, Screen.AllScreens))
                 {
                     if (settings.ToneMap && !record)
@@ -152,19 +158,22 @@ namespace QuickCapture
                     using (var selection = new SelectionOverlay(snapshot, desktop, monitor, mode, record,
                         settings.AutoSave, settings.AdjustAfterSelection))
                     {
-                        selection.VisibleChanged += delegate
+                        Action updateOverlay = delegate
                         {
-                            hook.SetVisibleOverlay(selection.Visible ? selection.Handle : IntPtr.Zero);
+                            hook.SetVisibleOverlay(selection.Visible ? selection.Handle : IntPtr.Zero, selection.CanCopyAndClose);
                         };
+                        selection.VisibleChanged += delegate { updateOverlay(); };
+                        selection.CopyAvailabilityChanged += updateOverlay;
                         try
                         {
                             if (selection.ShowDialog() != DialogResult.OK) return;
                         }
-                        finally { hook.SetVisibleOverlay(IntPtr.Zero); }
+                        finally { hook.SetVisibleOverlay(IntPtr.Zero, false); }
                         record = selection.Recording;
                         mode = selection.Mode;
                         area = selection.ScreenSelection;
                         savePng = selection.SavePng;
+                        forceCopy = selection.CopyAndCloseRequested;
                         if (!record)
                         {
                             if (mode == CaptureMode.Color) color = selection.PickedColor;
@@ -203,7 +212,7 @@ namespace QuickCapture
                 if (settings.Border) AddBorder(result);
                 if (source != null)
                 {
-                    Persist((Bitmap)result.Clone(), savePng, false);
+                    Persist((Bitmap)result.Clone(), savePng, false, forceCopy);
                     EditorForm preview = settings.MultipleWindows ? CreateEditor() : source;
                     preview.ShowImage(result);
                     Show(preview);
@@ -212,7 +221,7 @@ namespace QuickCapture
                 {
                     if (pending != null) pending.Dispose();
                     pending = result;
-                    Persist((Bitmap)result.Clone(), savePng, true);
+                    Persist((Bitmap)result.Clone(), savePng, true, forceCopy);
                 }
             }
             catch (Exception error) { Warn(error.Message); }
@@ -231,11 +240,11 @@ namespace QuickCapture
                 graphics.DrawRectangle(pen, size / 2, size / 2, Math.Max(1, image.Width - size), Math.Max(1, image.Height - size));
         }
 
-        private async void Persist(Bitmap image, bool save, bool notify)
+        private async void Persist(Bitmap image, bool save, bool notify, bool forceCopy)
         {
             using (image)
             {
-                bool copy = settings.AutoCopy;
+                bool copy = forceCopy || settings.AutoCopy;
                 if (!save && !copy)
                 {
                     if (notify) CaptureReady("스크린샷을 캡처했습니다.");

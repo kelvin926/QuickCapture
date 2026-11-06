@@ -57,7 +57,7 @@ namespace QuickCapture
             theme.SelectedIndexChanged += delegate { settings.Theme = theme.SelectedIndex; };
             rows.Controls.Add(theme);
             Heading("이 앱에 대한 정보");
-            rows.Controls.Add(new Label { Text = "QuickCapture 2.0.1", AutoSize = true });
+            rows.Controls.Add(new Label { Text = "QuickCapture 2.0.2", AutoSize = true });
             var done = new Button { Text = "닫기", Width = 95, Height = 31, DialogResult = DialogResult.OK, Margin = new Padding(0, 12, 0, 0) };
             rows.Controls.Add(done); AcceptButton = done; CancelButton = done;
         }
