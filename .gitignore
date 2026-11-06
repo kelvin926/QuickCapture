@@ -1,0 +1,12 @@
+/.deps/
+/dist/
+*.exe
+*.dll
+*.zip
+*.7z
+*.log
+*.mp4
+*.wav
+*.gif
+*.png
+settings.xml

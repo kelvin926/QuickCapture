@@ -1,0 +1,40 @@
+{
+  "project": "QuickCapture",
+  "date": "2026-11-06",
+  "version": "2.0.1",
+  "status": "2.0.1 source release built and verified",
+  "goal": "Independent Windows Snipping Tool replacement retaining Win+Shift+S",
+  "reference": "Microsoft.ScreenSketch 11.2608.41.0 installed on the local PC",
+  "repository": "https://github.com/kelvin926/QuickCapture",
+  "artifact": "dist/QuickCapture.exe",
+  "captureFolder": "Windows Pictures/QuickCapture",
+  "recordingFolder": "Windows Videos/QuickCapture",
+  "decisions": [
+    "Keep PNG persistence independent of clipboard publication.",
+    "Use local Windows OCR, ZXing for QR, DXGI FP16 for HDR correction, and a child FFmpeg process with WASAPI tracks for recording.",
+    "Use the documented OS Click to Do entry point on supported PCs and a local OCR action panel otherwise.",
+    "Offer content framing through a local perimeter heuristic and Bing visual search through the browser.",
+    "Fetch verified, pinned upstream archives during dependency restore. Publish source and build scripts.",
+    "Review a rectangle, window, or full-screen selection before commitment by default. Keep per-capture PNG saving independent of clipboard copy."
+  ],
+  "verified": [
+    "Dependencies restore from pinned archives and the release builds with warnings treated as errors under Windows PowerShell.",
+    "The packaged WinForms editor opens and displays a synthetic PNG.",
+    "The editor Text Actions menu opens and displays OCR word boxes and redaction commands.",
+    "Freeform transparency survives opening and exporting quick markup.",
+    "Local OCR recognizes synthetic text and content framing bounds the synthetic foreground.",
+    "Two actual silent screen segments record, pause, resume, concatenate, and decode as MP4.",
+    "MP4 trim and GIF export decode successfully.",
+    "The prior packaged executable starts and exits cleanly after extraction.",
+    "The physical shortcut smoke opens the Win+Shift+S overlay on the tested desktop.",
+    "Off-focus Escape routing reaches an isolated message target and stops after the overlay is detached.",
+    "The native Windows share manager can be obtained for a desktop window.",
+    "The review stage supports move and resize within the desktop, and final capture uses the adjusted source pixels.",
+    "The no-save choice skips PNG and directory creation. The enabled control case writes a PNG."
+  ],
+  "pendingVerification": [
+    "Physical shortcut to completed paste and an integrated rerun of off-focus keyboard routing on an idle desktop.",
+    "Live microphone and system audio synchronization, HDR monitor color, and sending through a Windows share target.",
+    "Visual and behavioral parity with all native app screens and OS-integrated features."
+  ]
+}

@@ -1,0 +1,18 @@
+The QuickCapture portable build includes the following third-party components.
+
+FFmpeg 9.0.2 (Gyan Windows x64 Essentials build, GPL version 3)
+Binary archive: https://github.com/GyanD/codexffmpeg/releases/tag/9.0.2
+SHA-256 of original archive: 4705843ccaaf54257c16ad90f3e952ece33c17df964ecf7bfdbb0f49c7171077
+FFmpeg source revision: https://github.com/FFmpeg/FFmpeg/commit/946fcce07b
+Build description and library list: https://www.gyan.dev/ffmpeg/builds/
+Original license and build information are in media/LICENSE and media/README.txt.
+QuickCapture invokes FFmpeg as a separate executable.
+
+NAudio.Core and NAudio.Wasapi 2.2.1 (MIT)
+https://github.com/naudio/NAudio/tree/v2.2.1
+
+SharpDX, SharpDX.Direct3D11 and SharpDX.DXGI 4.2.0 (MIT)
+https://github.com/sharpdx/SharpDX/tree/8e5df9f17b1d328c595a9df5851dbb2537b55621
+
+ZXing.Net 0.16.11 (Apache License 2.0)
+https://github.com/micjahn/ZXing.Net
