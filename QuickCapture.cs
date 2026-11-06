@@ -11,8 +11,8 @@ using System.Windows.Forms;
 
 [assembly: System.Reflection.AssemblyTitle("QuickCapture")]
 [assembly: System.Reflection.AssemblyDescription("Windows screen capture and recording")]
-[assembly: System.Reflection.AssemblyVersion("2.0.2.0")]
-[assembly: System.Reflection.AssemblyFileVersion("2.0.2.0")]
+[assembly: System.Reflection.AssemblyVersion("2.0.3.0")]
+[assembly: System.Reflection.AssemblyFileVersion("2.0.3.0")]
 
 namespace QuickCapture
 {
@@ -164,6 +164,7 @@ namespace QuickCapture
                         };
                         selection.VisibleChanged += delegate { updateOverlay(); };
                         selection.CopyAvailabilityChanged += updateOverlay;
+                        selection.CaptureOptionsChanged += ApplyCaptureOptions;
                         try
                         {
                             if (selection.ShowDialog() != DialogResult.OK) return;
@@ -186,7 +187,7 @@ namespace QuickCapture
                 {
                     if (!MediaTools.Available) { Warn("녹화 엔진이 없습니다. ZIP 전체를 풀고 실행하세요."); return; }
                     string destination = settings.SaveRecordings ? settings.Videos : MediaTools.TempFolder;
-                    using (var controls = new RecordingControls(area, destination, settings))
+                    using (var controls = new RecordingControls(area, destination, settings, SaveSettings))
                         if (controls.ShowDialog() == DialogResult.OK)
                         {
                             EditorForm preview = source == null || settings.MultipleWindows ? CreateEditor() : source;
@@ -357,8 +358,8 @@ namespace QuickCapture
                 var single = new CheckBox { Text = "줄바꿈 제거", Checked = settings.TextSingleLine, AutoSize = true };
                 var auto = new CheckBox { Text = "자동 복사", Checked = settings.TextAutoCopy, AutoSize = true };
                 buttons.Controls.Add(single); buttons.Controls.Add(auto);
-                single.CheckedChanged += delegate { settings.TextSingleLine = single.Checked; };
-                auto.CheckedChanged += delegate { settings.TextAutoCopy = auto.Checked; };
+                single.CheckedChanged += delegate { settings.TextSingleLine = single.Checked; SaveSettings(); };
+                auto.CheckedChanged += delegate { settings.TextAutoCopy = auto.Checked; SaveSettings(); };
                 form.KeyDown += delegate(object sender, KeyEventArgs args)
                 {
                     if (args.KeyCode == Keys.Escape) form.Close();
@@ -370,8 +371,6 @@ namespace QuickCapture
                 };
                 form.Controls.Add(body); form.Controls.Add(buttons);
                 form.ShowDialog();
-                try { settings.Save(); }
-                catch (Exception error) { Warn(error.Message); }
             }
         }
 
@@ -388,8 +387,20 @@ namespace QuickCapture
                 form.ShowDialog(owner);
             hook.CapturePrintScreen = settings.PrintScreen;
             foreach (EditorForm editor in editors) editor.ApplyTheme();
+            SaveSettings();
+        }
+
+        private void ApplyCaptureOptions(bool savePng, bool adjustAfterSelection)
+        {
+            settings.AutoSave = savePng;
+            settings.AdjustAfterSelection = adjustAfterSelection;
+            SaveSettings();
+        }
+
+        private void SaveSettings()
+        {
             try { settings.Save(); }
-            catch (Exception error) { Warn(error.Message); }
+            catch (Exception error) { Warn("설정을 저장하지 못했습니다. " + error.Message); }
         }
 
         private void OpenFolder(string folder)

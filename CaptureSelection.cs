@@ -47,10 +47,12 @@ namespace QuickCapture
         public CaptureMode Mode { get; private set; }
         public bool Recording { get; private set; }
         public bool SavePng { get { return savePng.Checked; } }
+        public bool AdjustAfterSelection { get { return adjustAfterSelection.Checked; } }
         public bool CanCopyAndClose { get { return !Recording && (ready || quickCanvas != null); } }
         public bool CopyAndCloseRequested { get; private set; }
         public string PickedColor { get; private set; }
         public event Action CopyAvailabilityChanged;
+        public event Action<bool, bool> CaptureOptionsChanged;
 
         public SelectionOverlay(Bitmap snapshot, Rectangle desktop, Rectangle monitor, CaptureMode mode, bool recording,
             bool saveByDefault, bool adjustByDefault)
@@ -96,6 +98,8 @@ namespace QuickCapture
             toolbar.Controls.Add(colorFormats);
             savePng = Option("PNG 저장", saveByDefault);
             adjustAfterSelection = Option("선택 후 조정", adjustByDefault);
+            savePng.CheckedChanged += delegate { ReportCaptureOptions(); };
+            adjustAfterSelection.CheckedChanged += delegate { ReportCaptureOptions(); };
             confirm = TextButton("완료", ConfirmSelection);
             reselect = TextButton("다시 선택", () => ChangeMode(Mode));
             Tool("닫기", "\ue711", () => DialogResult = DialogResult.Cancel);
@@ -111,6 +115,12 @@ namespace QuickCapture
             toolbar.Location = new Point(monitor.Left + (monitor.Width - toolbar.PreferredSize.Width) / 2, monitor.Top + 12);
             guide.Location = new Point(toolbar.Left, toolbar.Bottom + 6);
             UpdateGuide();
+        }
+
+        private void ReportCaptureOptions()
+        {
+            if (CaptureOptionsChanged != null)
+                CaptureOptionsChanged(SavePng, AdjustAfterSelection);
         }
 
         private CheckBox Option(string label, bool value)
@@ -476,7 +486,7 @@ namespace QuickCapture
 
         private void ReviewOrConfirm(bool fit)
         {
-            if (!fit && (Recording || !adjustAfterSelection.Checked || Mode == CaptureMode.Freeform || Mode == CaptureMode.Text))
+            if (!fit && (Recording || !AdjustAfterSelection || Mode == CaptureMode.Freeform || Mode == CaptureMode.Text))
             {
                 ConfirmSelection();
                 return;

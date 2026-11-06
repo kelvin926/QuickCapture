@@ -1,8 +1,8 @@
 {
   "project": "QuickCapture",
   "date": "2026-11-06",
-  "version": "2.0.2",
-  "status": "2.0.2 built and installed with current-user tray startup",
+  "version": "2.0.3",
+  "status": "2.0.3 built and installed with current-user tray startup",
   "goal": "Independent Windows Snipping Tool replacement retaining Win+Shift+S",
   "reference": "Microsoft.ScreenSketch 11.2608.41.0 installed on the local PC",
   "repository": "https://github.com/kelvin926/QuickCapture",
@@ -16,7 +16,8 @@
     "Offer content framing through a local perimeter heuristic and Bing visual search through the browser.",
     "Fetch verified, pinned upstream archives during dependency restore. Publish source and build scripts.",
     "Review a rectangle, window, or full-screen selection before commitment by default. Keep per-capture PNG saving independent of clipboard copy.",
-    "Make Ctrl+C explicitly copy and close review or quick markup. Run the installed app with --tray at Windows sign-in."
+    "Make Ctrl+C explicitly copy and close review or quick markup. Run the installed app with --tray at Windows sign-in.",
+    "Persist the capture, recording, and text extractor checkbox choices as soon as they change."
   ],
   "verified": [
     "Dependencies restore from pinned archives and the release builds with warnings treated as errors under Windows PowerShell.",
@@ -34,7 +35,10 @@
     "The no-save choice skips PNG and directory creation. The enabled control case writes a PNG.",
     "Ctrl+C confirms the current crop or markup, preserves the PNG choice, and schedules an explicit copy even with automatic copy disabled.",
     "Off-focus Ctrl+C is routed only while the overlay can confirm a capture.",
-    "Launching the current-user Startup shortcut starts 2.0.2 in the tray without an editor. Repeating the launch keeps one tray instance."
+    "Launching the current-user Startup shortcut starts the installed app in the tray without an editor. Repeating the launch keeps one tray instance.",
+    "Capture checkbox changes survive cancellation and settings reload. Quick markup inherits and updates the same PNG setting.",
+    "The microphone and system audio checkbox choices persist without starting a recording.",
+    "The updated Startup shortcut launches 2.0.3 in the tray without an editor."
   ],
   "pendingVerification": [
     "Physical shortcut to completed paste and an actual Windows sign-in cycle.",

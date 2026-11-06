@@ -274,7 +274,7 @@ namespace QuickCapture
         private bool started, paused, busy, complete;
         public string Output { get; private set; }
 
-        public RecordingControls(Rectangle area, string destination, QuickSettings settings)
+        public RecordingControls(Rectangle area, string destination, QuickSettings settings, Action saveSettings)
         {
             this.destination = destination;
             session = new RecordingSession(area);
@@ -302,6 +302,8 @@ namespace QuickCapture
             stop.Click += async delegate { await Finish(); };
             mic = new CheckBox { Text = "마이크", Checked = settings.Microphone, AutoSize = true, Margin = new Padding(6, 7, 0, 0) };
             speaker = new CheckBox { Text = "시스템 소리", Checked = settings.SystemAudio, AutoSize = true, Margin = new Padding(6, 7, 0, 0) };
+            mic.CheckedChanged += delegate { settings.Microphone = mic.Checked; saveSettings(); };
+            speaker.CheckedChanged += delegate { settings.SystemAudio = speaker.Checked; saveSettings(); };
             clock = new Label { Text = "00:00", AutoSize = true, Margin = new Padding(8, 9, 0, 0) };
             bar.Controls.AddRange(new Control[] { start, stop, mic, speaker, clock });
             timer = new System.Windows.Forms.Timer { Interval = 250 };
